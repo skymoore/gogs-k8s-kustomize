@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet 
+metadata:
+  name: gogs-db
+spec:
+  serviceName: "gogs-db-headless"
+  template:
+    spec:
+      serviceAccountName: gogs
+      containers:
+        - name: gogs-db
+          image: postgres-image
+          envFrom:
+            - secretRef:
+                name: db-env
+          ports:
+            - name: gogs-db-port
+              containerPort: 5432
+              protocol: TCP
+          volumeMounts:
+            - name: gogs-db
+              mountPath: /var/lib/postgresql/data
+              subPath: data
+      volumes:
+        - name: gogs-db
+          persistentVolumeClaim:
+            claimName: gogs-db-data
+            

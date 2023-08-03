@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: "redis-headless"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        tier: redis
+    spec:
+      serviceAccountName: gogs
+      containers:
+      - name: redis
+        image: redis-image
+        ports:
+        - containerPort: 6379
+          name: redis-port
+        volumeMounts:
+        - name: redis-strg
+          mountPath: /data
+      volumes:
+      - name: redis-strg
+        persistentVolumeClaim:
+          claimName: redis-strg

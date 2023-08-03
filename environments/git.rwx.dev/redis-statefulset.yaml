@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  template:
+    spec:
+      containers:
+      - name: redis
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-env
+              key: REDIS_PASSWORD
+        volumeMounts:
+        - name: redis-strg
+          mountPath: /data
+        - name: db-env
+          mountPath: /mnt/vault-secrets-store
+          readOnly: true
+      volumes:
+      - name: redis-strg
+        persistentVolumeClaim:
+          claimName: redis-strg
+      - name: db-env
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: db-env

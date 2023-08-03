@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gogs-statefulset
+spec:
+  serviceName: "gogs-headless"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        tier: ssh
+    spec:
+      serviceAccountName: gogs
+      initContainers:
+      - name: volume-dirs-init
+        image: busybox:1.35
+        command:
+          - "/bin/mkdir"
+        args:
+          - "-p"
+          - "/data/gogs/conf"
+          - "/data/repos"
+          - "/data/lfs"
+          - "/data/attachments"
+        volumeMounts:
+          - name: gogs-data
+            mountPath: "/data"
+        env:
+          - name: DB_PASSWD
+            valueFrom:
+              secretKeyRef:
+                name: db-env
+                key: POSTGRES_PASSWORD
+      containers:
+      - name: gogs
+        image: gogs-image
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-env
+              key: POSTGRES_USER
+        - name: DB_PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: db-env
+              key: POSTGRES_PASSWORD
+        ports:
+        - name: gogs-port
+          protocol: TCP
+          containerPort: 9988
+        - name: ssh-port
+          protocol: TCP
+          containerPort: 22
+        volumeMounts:
+        - name: gogs-data
+          mountPath: /data
+      volumes:
+        - name: gogs-data
+          persistentVolumeClaim:
+            claimName: gogs-data

@@ -1,0 +1,33 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gogs
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app: gogs
+
+secretGenerator:
+  - name: db-env
+    envs:
+      - config/db.env
+
+resources:
+  - namespace.yaml
+  - serviceaccount.yaml
+  - storage.yaml
+  - gogs-db-headless.yaml
+  - gogs-db-pvc.yaml
+  - gogs-db-statefulset.yaml
+  - gogs-db-svc.yaml
+  - redis-headless.yaml
+  - redis-pvc.yaml
+  - redis-statefulset.yaml
+  - redis-svc.yaml
+  - gogs-headless.yaml
+  - gogs-pvc.yaml
+  - gogs-statefulset.yaml
+  - gogs-http-svc.yaml
+  - gogs-ssh-svc.yaml

@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gogs-statefulset
+spec:
+  serviceName: "gogs-headless"
+  replicas: 1
+  template:
+    spec:
+      initContainers:
+      - name: volume-dirs-init
+      - name: db-passwd-init
+        image: busybox:1.35
+        command: ["/bin/sh", "-c"]
+        args: 
+          - 'sed "s/DATABASE_PASSWORD/PASSWORD = ${DB_PASSWD}/g" /gogs/app.ini > /data/gogs/conf/app.ini'
+        volumeMounts:
+          - name: gogs-data
+            mountPath: "/data"
+          - name: app-ini
+            mountPath: /gogs/app.ini
+            subPath: app.ini
+          - name: db-env
+            mountPath: /mnt/vault-secrets-store
+            readOnly: true
+        env:
+          - name: DB_PASSWD
+            valueFrom:
+              secretKeyRef:
+                name: db-env
+                key: POSTGRES_PASSWORD
+      - name: smtp-token-init
+        image: busybox:1.35
+        command: ["/bin/sh", "-c"]
+        args: 
+          - 'sed -i "s/SMTP_TOKEN/PASSWORD = ${SMTP_TOKEN}/g" /data/gogs/conf/app.ini'
+        volumeMounts:
+          - name: gogs-data
+            mountPath: "/data"
+          - name: db-env
+            mountPath: /mnt/vault-secrets-store
+            readOnly: true
+        env:
+          - name: SMTP_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: db-env
+                key: SMTP_TOKEN
+      # - name: redis-password-init
+      #   image: busybox:1.35
+      #   command: ["/bin/sh", "-c"]
+      #   args: 
+      #     - 'sed -i "s/REDIS_PASSWORD/${REDIS_PASSWORD}/g" /data/gogs/conf/app.ini'
+      #   volumeMounts:
+      #     - name: gogs-data
+      #       mountPath: "/data"
+      #     - name: db-env
+      #       mountPath: /mnt/vault-secrets-store
+      #       readOnly: true
+      #   env:
+      #     - name: REDIS_PASSWORD
+      #       valueFrom:
+      #         secretKeyRef:
+      #           name: db-env
+      #           key: REDIS_PASSWORD
+      containers:
+      - name: gogs
+        volumeMounts:
+        - name: gogs-data
+          mountPath: /data
+        
+      volumes:
+        - name: gogs-data
+          persistentVolumeClaim:
+            claimName: gogs-data
+        - name: db-env
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: db-env
+        - name: app-ini
+          configMap:
+            name: app-ini
