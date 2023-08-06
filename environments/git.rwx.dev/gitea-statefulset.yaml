@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitea-statefulset
+spec:
+  serviceName: "gitea-headless"
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: gitea
+        # command: ["tail", "-f", "/dev/null"]
+        envFrom:
+        - secretRef:
+            name: gitea-env
+        - configMapRef:
+            name: gitea-env
+        volumeMounts:
+        - name: gitea-data
+          mountPath: /data
+        - name: gitea-env
+          mountPath: /mnt/vault-secrets-store
+          readOnly: true
+        
+      volumes:
+        - name: gitea-data
+          persistentVolumeClaim:
+            claimName: gitea-data
+        - name: gitea-env
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: gitea-env

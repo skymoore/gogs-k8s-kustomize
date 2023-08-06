@@ -2,15 +2,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: gogs
+namespace: gitea
 
 images:
-  - name: gogs-image
-    newName: gogs/gogs
-    newTag: latest
+  - name: gitea-image
+    newName: gitea/gitea
+    newTag: "1.20"
   - name: postgres-image
     newName: postgres
-    newTag: latest
+    newTag: 14-alpine
   - name: redis-image
     newName: redis
     newTag: latest
@@ -18,24 +18,19 @@ images:
 labels:
   - includeSelectors: true
     pairs:
-      app: gogs
+      app: gitea
 
 configMapGenerator:
-  - name: app-ini
-    files:
-      - config/app.ini
+  - name: gitea-env
+    envs:
+      - config/gitea.env
+    
 
 patches:
   - path: storage.yaml
-  - path: gogs-db-statefulset.yaml
-  - path: gogs-statefulset.yaml
+  - path: db-statefulset.yaml
+  - path: gitea-statefulset.yaml
   # - path: redis-statefulset.yaml
-  - patch: |-
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: db-env
-      $patch: delete
 
 resources:
   - ../../base

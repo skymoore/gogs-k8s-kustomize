@@ -2,28 +2,25 @@
 apiVersion: apps/v1
 kind: StatefulSet 
 metadata:
-  name: gogs-db
+  name: gitea-db
 spec:
-  serviceName: "gogs-db-headless"
+  serviceName: "gitea-db-headless"
   template:
     spec:
-      serviceAccountName: gogs
+      serviceAccountName: gitea
       containers:
-        - name: gogs-db
+        - name: gitea-db
           image: postgres-image
-          envFrom:
-            - secretRef:
-                name: db-env
           ports:
-            - name: gogs-db-port
+            - name: gitea-db-port
               containerPort: 5432
               protocol: TCP
           volumeMounts:
-            - name: gogs-db
+            - name: gitea-db
               mountPath: /var/lib/postgresql/data
               subPath: data
       volumes:
-        - name: gogs-db
+        - name: gitea-db
           persistentVolumeClaim:
-            claimName: gogs-db-data
+            claimName: gitea-db-data
             

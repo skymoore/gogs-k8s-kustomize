@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: gogs
+  name: gitea-db
 spec:
   ports:
     - protocol: TCP
-      port: 3000
-      targetPort: gogs-port
+      port: 5432
+      targetPort: gitea-db-port

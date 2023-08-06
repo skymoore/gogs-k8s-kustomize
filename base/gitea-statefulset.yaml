@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitea-statefulset
+spec:
+  serviceName: "gitea-headless"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        tier: ssh
+    spec:
+      serviceAccountName: gitea
+      initContainers:
+      - name: volume-dirs-init
+        image: busybox:1.35
+        command:
+          - "/bin/mkdir"
+        args:
+          - "-p"
+          - "/data/avatars"
+          - "/data/gitea/conf"
+          - "/data/repos"
+          - "/data/lfs"
+          - "/data/attachments"
+        volumeMounts:
+          - name: gitea-data
+            mountPath: "/data"
+      containers:
+      - name: gitea
+        image: gitea-image
+        ports:
+        - name: gitea-port
+          protocol: TCP
+          containerPort: 3000
+        - name: ssh-port
+          protocol: TCP
+          containerPort: 22
+        volumeMounts:
+        - name: gitea-data
+          mountPath: /var/opt/gitea
+      volumes:
+        - name: gitea-data
+          persistentVolumeClaim:
+            claimName: gitea-data

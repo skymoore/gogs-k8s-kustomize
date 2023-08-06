@@ -1,4 +1,4 @@
-## Gogs K8s Kustomize
+## gitea K8s Kustomize
 
 #### To Deploy
 - Requirements:
@@ -12,20 +12,20 @@
 1. Create a new environment and kustomize it as desired:  
     `mkdir environments/your.domain.com`
 2. Configure values in `environments/your.domain.com/config/app.ini`.
-3. Modify the initContainers in `environments/your.domain.com/gogs-statefulset.yaml` according to your secrets provider.
+3. Modify the initContainers in `environments/your.domain.com/gitea-statefulset.yaml` according to your secrets provider.
 4. Deploy to your cluster  
    `kustomize build . | k apply -f -`
 #### Create Admin User
 
 ```bash
-kubectl -it -n gogs exec gogs-statefulset-0 -c gogs -- /bin/ash 
+kubectl -it -n gitea exec gitea-statefulset-0 -c gitea -- /bin/ash 
 ```
 
 ```bash
-USER=git /app/gogs/gogs admin create-user --admin --name admin --password admin123 --email admin@gmail.com
+USER=git /app/gitea/gitea admin create-user --admin --name admin --password admin123 --email admin@gmail.com
 ```
 
-#### To Apply a theme see [Kos-M GogsThemes](https://github.com/Kos-M/GogsThemes)
+#### To Apply a theme see [Kos-M giteaThemes](https://github.com/Kos-M/giteaThemes)
 
 #### To setup SSH ingress on GKE with ingress-nginx via helm
 1. Add these values to your chart:
@@ -61,7 +61,7 @@ USER=git /app/gogs/gogs admin create-user --admin --name admin --password admin1
      name: tcp-services
      namespace: ingress-nginx
    data:
-     22: "gogs/ssh:22"
+     22: "gitea/ssh:22"
    ```
 3. Patch the ingress-nginx-controller service:  
    ```bash

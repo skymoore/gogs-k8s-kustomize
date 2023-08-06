@@ -2,27 +2,30 @@
 apiVersion: apps/v1
 kind: StatefulSet 
 metadata:
-  name: gogs-db
+  name: gitea-db
 spec:
   template:
     spec:
       containers:
-        - name: gogs-db
+        - name: gitea-db
+          envFrom:
+            - secretRef:
+                name: gitea-env
           volumeMounts:
-            - name: gogs-db
+            - name: gitea-db
               mountPath: /var/lib/postgresql/data
               subPath: data
-            - name: db-env
+            - name: gitea-env
               mountPath: /mnt/vault-secrets-store
               readOnly: true
       volumes:
-        - name: gogs-db
+        - name: gitea-db
           persistentVolumeClaim:
-            claimName: gogs-db-data
-        - name: db-env
+            claimName: gitea-db-data
+        - name: gitea-env
           csi:
             driver: secrets-store.csi.k8s.io
             readOnly: true
             volumeAttributes:
-              secretProviderClass: db-env
+              secretProviderClass: gitea-env
             

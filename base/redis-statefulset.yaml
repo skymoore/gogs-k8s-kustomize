@@ -10,7 +10,7 @@ spec:
       labels:
         tier: redis
     spec:
-      serviceAccountName: gogs
+      serviceAccountName: gitea
       containers:
       - name: redis
         image: redis-image
